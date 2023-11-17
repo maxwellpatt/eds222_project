@@ -1,20 +1,17 @@
 ---
-<<<<<<< HEAD
 title: "Analysis"
-=======
-title: "Data Cleaning"
 >>>>>>> fe9746c (added freedom and esg bank data)
 format: html
 editor: visual
 ---
 
-```{r}
-<<<<<<< HEAD
-freedom <- 
-=======
-
+```{r, warning=FALSE}
 # import libraries
-library(here())
+library(here)
+library(dplyr)
+library(tidyverse)
+library(ggplot2)
+library(janitor)
 ```
 
 ```{r}
@@ -27,6 +24,14 @@ colnames(freedom) <- freedom[5, ]
 
 # remove first 4 rows
 freedom <- freedom[-c(1:5), ]
+
+# clean up column names in freedom using janitor package 
+freedom <- clean_names(freedom)
+
+# convert appropriate columns from char to num
+freedom <- freedom %>%
+      mutate(across(6:ncol(freedom), as.numeric))
+
 ```
 
 ```{r}
@@ -34,7 +39,7 @@ freedom <- freedom[-c(1:5), ]
 # read in esg data
 esg_bank <- read.csv(here('data/esg_worldbank.csv'))
 
-# ------------------------------- update column names # -------------------------------
+# ------------------------------- update column names ------------------------------- #
 
 # extract column names for columns 5 to 29
 original_col_names <- colnames(esg_bank)[5:29]
@@ -49,7 +54,6 @@ colnames(esg_bank)[5:29] <- modified_col_names
 esg_bank <- subset(esg_bank, select = -c(Country.Code, Series.Code))
 
 # renaming esg columns
-# colnames(df)[colnames(df) == "old_name"] <- "new_name"
 colnames(esg_bank)[colnames(esg_bank) == "Country.Name"] <- "Countries"
 colnames(esg_bank)[colnames(esg_bank) == "Series.Name"] <- "Series"
 
@@ -57,11 +61,20 @@ colnames(esg_bank)[colnames(esg_bank) == "Series.Name"] <- "Series"
 colnames(esg_bank)
 
 
-
 ```
 
 ```{r}
 esg_2022 <- read.csv(here('data/esg_bank_2022.csv'))
-
->>>>>>> fe9746c (added freedom and esg bank data)
 ```
+
+```{r}
+# ------------------------------- lin reg testing ------------------------------- #
+
+```
+
+
+
+
+
+
+
