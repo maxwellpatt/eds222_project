@@ -1,5 +1,5 @@
 ---
-title: "Analysis"
+title: "Testing"
 >>>>>>> fe9746c (added freedom and esg bank data)
 format: html
 editor: visual
@@ -47,6 +47,8 @@ original_col_names <- colnames(esg_bank)[5:29]
 # remove the first 7 characters
 modified_col_names <- substr(original_col_names, 10, nchar(original_col_names))
 
+# remove the last character of all of the year columns
+
 # update the data frame with modified column names
 colnames(esg_bank)[5:29] <- modified_col_names
 
@@ -66,6 +68,19 @@ colnames(esg_bank)
 ```{r}
 esg_2022 <- read.csv(here('data/esg_bank_2022.csv'))
 ```
+
+
+```{r}
+# ------------------------------- freedom correlation ------------------------------- #
+ggplot(freedom, aes(x = economic_freedom_summary_index, y = x3a_money_growth)) +
+  geom_point() +  # add points
+  theme_minimal() +  # minimal theme for cleaner look
+  labs(title = "Relationship between Economic Freedom and Gender Disparity",
+       x = "Economic Freedom Summary Index",
+       y = "Gender Disparity Index")
+
+```
+
 
 ```{r}
 # ------------------------------- lin reg testing ------------------------------- #
