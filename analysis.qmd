@@ -1,9 +1,15 @@
 ---
-title: "Testing"
->>>>>>> fe9746c (added freedom and esg bank data)
+title: "Initial Exploration"
 format: html
 editor: visual
 ---
+
+Data has been obtained from the following sources:
+
+Economic Freedom of the World: 2022 Annual Report: https://www.fraserinstitute.org/studies/economic-freedom-of-the-world-2022-annual-report
+
+
+
 
 ```{r, warning=FALSE}
 # import libraries
@@ -13,26 +19,8 @@ library(tidyverse)
 library(ggplot2)
 library(janitor)
 library(pak)
-library(chatgpt)
-library(gptstudio)
-api_key <- Sys.getenv("OPENAI_API_KEY")
 ```
 
-```{r}
-library(httr)
-
-response <- POST(
-  url = "https://api.openai.com/v1/engines/davinci/completions",
-  add_headers(`Authorization` = paste("Bearer", api_key)),
-  body = list(prompt = "Translate the following English text to French: 'Hello, world!'", max_tokens = 60),
-  encode = "json"
-)
-
-content <- content(response, "text")
-print(content)
-
-
-```
 
 
 ```{r}
@@ -92,6 +80,12 @@ esg_2022 <- read.csv(here('data/esg_bank_2022.csv'))
 
 
 ```{r}
+# ------------------------------- DATA CLEANING ------------------------------- #
+```
+
+
+
+```{r}
 # ------------------------------- freedom correlation ------------------------------- #
 ggplot(freedom, aes(x = economic_freedom_summary_index, y = x3a_money_growth)) +
   geom_point() +  # add points
@@ -108,6 +102,13 @@ ggplot(freedom, aes(x = economic_freedom_summary_index, y = x3a_money_growth)) +
 
 ```
 
+```{r}
+# ------------------------------- logit testing ------------------------------- #
+```
+
+```{r}
+# ------------------------------- lin reg testing ------------------------------- #
+```
 
 
 
