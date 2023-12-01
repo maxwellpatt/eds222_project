@@ -118,7 +118,8 @@ emissions_per_capita_2020 <- esg_bank %>%
 freedom_2021_emissions <- freedom_2021 %>% 
   left_join(emissions_per_capita_2020, by = 'countries')
 
-
+filtered <- freedom_2021_emissions %>%
+  arrange(desc(x3_sound_money)) 
 ```
 
 ```{r}
@@ -132,26 +133,6 @@ ggplot(combined_data, aes(x = x5_regulation, y = Value)) +
   labs(title = "Emissions per Capita vs Government Consumption",
        x = "Government Consumption",
        y = "Emissions per Capita")
-```
-
-```{}
-```
-
-```{}
-```
-
-```{r}
-```
-
-```{r}
-# ------------------------------- freedom correlation ------------------------------- #
-ggplot(freedom, aes(x = economic_freedom_summary_index, y = x3a_money_growth)) +
-  geom_point() +  # add points
-  theme_minimal() +  # minimal theme for cleaner look
-  labs(title = "Relationship between Economic Freedom and Gender Disparity",
-       x = "Economic Freedom Summary Index",
-       y = "Gender Disparity Index")
-
 ```
 
 ```{r}
@@ -177,12 +158,27 @@ summary(ordinal_model)
 ```
 
 ```{r}
+# Convert to numeric if it's not numeric
+if (!is.numeric(freedom_2021_emissions$Value)) {
+  freedom_2021_emissions$Value <- as.numeric(as.character(freedom_2021_emissions$Value))
+}
+
 # ------------------------------- lin reg testing ------------------------------- #
-rf_model <- randomForest(Value ~ ., data = freedom_2021_emissions)
-print(rf_model)
+# Remove rows with missing values
+freedom_2021_emissions_clean <- na.omit(freedom_2021_emissions)
+
+# Then re-run your model
+model <- lm(Value ~ x1c_government_investment, data = freedom_2021_emissions)
+
+model
 ```
 
+```{r}
+ggplot(freedom_2021_emissions, aes(x = x1c_government_investment, y = Value)) +
+  geom_point() +
+  labs(title = "Value vs. Government Investment",
+       x = "Government Investment",
+       y = "Value") +
+  theme_minimal()
 
-
-
-
+```
