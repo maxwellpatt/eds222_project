@@ -8,8 +8,29 @@ Data has been obtained from the following sources:
 
 Economic Freedom of the World: 2022 Annual Report: https://www.fraserinstitute.org/studies/economic-freedom-of-the-world-2022-annual-report
 
+-   Stored as freedom variable
 
+-   Contains freedom index for each country for each year
 
+-   Columns of interest:
+
+    -   Government consumption -- x1a_government_consumption
+
+    -   Size of government -- x1_size_of_government
+
+    -   Money growth -- x3a_money_growth
+
+    -   FInancial openness -- x4di_financial_openness
+
+    -   Freedom to trade internationally -- x4_freedom_to_trade_internationally
+
+    -   Credit market regulations -- x5a_credit_market_regulation
+
+    -   Labor market regulations -- x5b_labor_market_regulations
+
+    -   Regulation -- x5_regulation
+
+    -   Region -- world_bank_region
 
 ```{r, warning=FALSE}
 # import libraries
@@ -18,12 +39,13 @@ library(dplyr)
 library(tidyverse)
 library(ggplot2)
 library(janitor)
-library(pak)
+library(tidyr)
+library(MASS)
+library(randomForest)
 ```
 
-
-
 ```{r}
+# ------------------------------- DATA CLEANING ------------------------------- #
 
 # read in freedom data
 freedom <- read.csv(here('data/freedom/efw_ratings.csv'), header = FALSE)
@@ -40,6 +62,11 @@ freedom <- clean_names(freedom)
 # convert appropriate columns from char to num
 freedom <- freedom %>%
       mutate(across(6:ncol(freedom), as.numeric))
+
+# store only 2021 scores
+freedom_2021 <- freedom %>% 
+  filter(year == 2021) %>% 
+  select(c(-year, -na))
 
 ```
 
@@ -65,25 +92,56 @@ colnames(esg_bank)[5:29] <- modified_col_names
 esg_bank <- subset(esg_bank, select = -c(Country.Code, Series.Code))
 
 # renaming esg columns
-colnames(esg_bank)[colnames(esg_bank) == "Country.Name"] <- "Countries"
+colnames(esg_bank)[colnames(esg_bank) == "Country.Name"] <- "countries"
 colnames(esg_bank)[colnames(esg_bank) == "Series.Name"] <- "Series"
+
+# make year columns numeric
+esg_bank <- esg_bank %>%
+  mutate(across(`1998.`:`2022.`, as.numeric))
+
 
 # view the modified column names to confirm changes
 colnames(esg_bank)
 
+# transform data so each row represents a country, year and series 
+# pivot and filter to emissions per capita in 2020
+emissions_per_capita_2020 <- esg_bank %>%
+  pivot_longer(
+    cols = '1998.':'2022.',
+    names_to = "Year",
+    values_to = "Value"
+  ) %>%
+  filter(Year == '2020.') %>% 
+  filter(Series == 'Methane emissions (metric tons of CO2 equivalent per capita)')
+
+# joins freedom with 2021 emissions data
+freedom_2021_emissions <- freedom_2021 %>% 
+  left_join(emissions_per_capita_2020, by = 'countries')
+
 
 ```
 
 ```{r}
-esg_2022 <- read.csv(here('data/esg_bank_2022.csv'))
-```
+correlation_analysis <- cor(combined_data$Value, combined_data$x5_regulation, use = "complete.obs")
 
+```
 
 ```{r}
-# ------------------------------- DATA CLEANING ------------------------------- #
+ggplot(combined_data, aes(x = x5_regulation, y = Value)) +
+  geom_point() +
+  labs(title = "Emissions per Capita vs Government Consumption",
+       x = "Government Consumption",
+       y = "Emissions per Capita")
 ```
 
+```{}
+```
 
+```{}
+```
+
+```{r}
+```
 
 ```{r}
 # ------------------------------- freedom correlation ------------------------------- #
@@ -96,7 +154,6 @@ ggplot(freedom, aes(x = economic_freedom_summary_index, y = x3a_money_growth)) +
 
 ```
 
-
 ```{r}
 # ------------------------------- lin reg testing ------------------------------- #
 
@@ -104,12 +161,26 @@ ggplot(freedom, aes(x = economic_freedom_summary_index, y = x3a_money_growth)) +
 
 ```{r}
 # ------------------------------- logit testing ------------------------------- #
+# Assuming OrdinalOutcome is your ordinal dependent variable
+# Converting it to an ordered factor
+freedom_2021_emissions$Value <- ordered(freedom_2021_emissions$economic_freedom_summary_index)
+
+# Fit ordinal logistic regression model
+ordinal_model <- polr(Value ~ economic_freedom_summary_index,
+                      data = freedom_2021_emissions, 
+                      Hess = TRUE)
+
+# View model summary
+summary(ordinal_model)
+
+
 ```
 
 ```{r}
 # ------------------------------- lin reg testing ------------------------------- #
+rf_model <- randomForest(Value ~ ., data = freedom_2021_emissions)
+print(rf_model)
 ```
-
 
 
 
