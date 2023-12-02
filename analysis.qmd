@@ -32,6 +32,8 @@ Economic Freedom of the World: 2022 Annual Report: https://www.fraserinstitute.o
 
     -   Region -- world_bank_region
 
+The World Bank DataBank -- <https://databank.worldbank.org/source/environment-social-and-governance-(esg)-data>
+
 ```{r, warning=FALSE}
 # import libraries
 library(here)
@@ -65,8 +67,11 @@ freedom <- freedom %>%
 
 # store only 2021 scores
 freedom_2021 <- freedom %>% 
-  filter(year == 2021) %>% 
-  select(c(-year, -na))
+  filter(year == 2021) 
+
+# filter for US data
+freedom_usa <- freedom %>% 
+  filter(iso_code_3 == "USA")
 
 ```
 
@@ -99,7 +104,6 @@ colnames(esg_bank)[colnames(esg_bank) == "Series.Name"] <- "Series"
 esg_bank <- esg_bank %>%
   mutate(across(`1998.`:`2022.`, as.numeric))
 
-
 # view the modified column names to confirm changes
 colnames(esg_bank)
 
@@ -117,60 +121,35 @@ emissions_per_capita_2020 <- esg_bank %>%
 # joins freedom with 2021 emissions data
 freedom_2021_emissions <- freedom_2021 %>% 
   left_join(emissions_per_capita_2020, by = 'countries')
-
-filtered <- freedom_2021_emissions %>%
-  arrange(desc(x3_sound_money)) 
 ```
 
 ```{r}
-correlation_analysis <- cor(combined_data$Value, combined_data$x5_regulation, use = "complete.obs")
+# testing new World Bank ESG data
+# reading in data
+wb_data <- read_csv('data/esg_wb_data/esg_wb_data.csv')
 
-```
-
-```{r}
-ggplot(combined_data, aes(x = x5_regulation, y = Value)) +
-  geom_point() +
-  labs(title = "Emissions per Capita vs Government Consumption",
-       x = "Government Consumption",
-       y = "Emissions per Capita")
-```
-
-```{r}
-# ------------------------------- lin reg testing ------------------------------- #
-
-```
-
-```{r}
-# ------------------------------- logit testing ------------------------------- #
-# Assuming OrdinalOutcome is your ordinal dependent variable
-# Converting it to an ordered factor
-freedom_2021_emissions$Value <- ordered(freedom_2021_emissions$economic_freedom_summary_index)
-
-# Fit ordinal logistic regression model
-ordinal_model <- polr(Value ~ economic_freedom_summary_index,
-                      data = freedom_2021_emissions, 
-                      Hess = TRUE)
-
-# View model summary
-summary(ordinal_model)
+# update column names
+colnames(wb_data) <- gsub("^(....).*", "\\1", colnames(wb_data)) %>% 
+  as.numeric()
 
 
 ```
 
 ```{r}
-# Convert to numeric if it's not numeric
-if (!is.numeric(freedom_2021_emissions$Value)) {
-  freedom_2021_emissions$Value <- as.numeric(as.character(freedom_2021_emissions$Value))
-}
+# ------------------------------- YoY visuals ------------------------------- #
+ggplot(freedom_usa, aes(x = year, y = x1_size_of_government)) +
+  geom_point() + 
+  geom_smooth(method = "lm", se = FALSE) + 
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+  labs(title = "Economic Freedom Score Over Time", 
+       x = "Year", 
+       y = "Economic Freedom Score")
 
-# ------------------------------- lin reg testing ------------------------------- #
-# Remove rows with missing values
-freedom_2021_emissions_clean <- na.omit(freedom_2021_emissions)
+```
 
-# Then re-run your model
-model <- lm(Value ~ x1c_government_investment, data = freedom_2021_emissions)
+```{r}
 
-model
 ```
 
 ```{r}
