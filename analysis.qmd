@@ -34,7 +34,7 @@ Economic Freedom of the World: 2022 Annual Report: https://www.fraserinstitute.o
 
 The World Bank DataBank -- <https://databank.worldbank.org/source/environment-social-and-governance-(esg)-data>
 
-```{r, warning=FALSE}
+```{r, warning=FALSE, message=FALSE}
 # import libraries
 library(here)
 library(dplyr)
@@ -78,7 +78,8 @@ freedom_usa <- freedom %>%
 ```{r}
 
 # read in esg data
-esg_bank <- read.csv(here('data/esg_worldbank.csv'))
+esg_bank <- read.csv(here('data/esg_worldbank.csv')) %>% 
+  clean_names()
 
 # ------------------------------- update column names ------------------------------- #
 
@@ -125,12 +126,23 @@ freedom_2021_emissions <- freedom_2021 %>%
 
 ```{r}
 # testing new World Bank ESG data
-# reading in data
-wb_data <- read_csv('data/esg_wb_data/esg_wb_data.csv')
 
-# update column names
-colnames(wb_data) <- gsub("^(....).*", "\\1", colnames(wb_data)) %>% 
-  as.numeric()
+# reading in World Bank data
+wb_data <- read_csv('data/esg_wb_data/esg_wb_data.csv') %>% 
+  clean_names()
+
+developed_countries <- c(
+    "Australia", "Austria", "Belgium", "Canada", "Denmark",
+    "Finland", "France", "Germany", "Ireland", "Italy",
+    "Japan", "Luxembourg", "Netherlands", "New Zealand", "Norway",
+    "Singapore", "South Korea", "Spain", "Sweden", "Switzerland",
+    "United Kingdom", "United States", "Israel", "Hong Kong",
+    "Iceland", "Portugal", "Greece", "Czech Republic", "Slovenia",
+    "Slovakia", "Estonia", "Cyprus", "Malta"
+)
+
+wb_data_developed <- read_csv('data/esg_wb_data/esg_wb_data.csv') %>% 
+  filter(countries == developed_countries)
 
 
 ```
